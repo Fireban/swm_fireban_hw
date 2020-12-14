@@ -8,7 +8,7 @@
          then
              echo "seekware-sdl (PID : $PROCESS1) alredy runing"
      else
-         ./seekware-sdl &
+         ./swm_fireban-hw/thermal-imaging-camera/example/src/seekware-stream_v2//seekware-sdl &
          echo "seekware-sdl run"
      fi
      sleep 3
