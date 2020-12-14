@@ -29,10 +29,10 @@ stty -F /dev/serial0 9600
 
 vim swm_fireban-hw/project/src/process.c
 
-> #define FFMPEG_INIT_URL		// device init
-> #define GPS_URL			// gps data transfer
-> #define FFMPEG_THERMAL		// streaming thermal image camera
-> #define FFMPEG_VIDEO 		// streaming video
+> #define FFMPEG_INIT_URL
+> #define GPS_URL
+> #define FFMPEG_THERMAL
+> #define FFMPEG_VIDEO
 
 
 
