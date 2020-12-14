@@ -1,0 +1,185 @@
+;
+; Install WinUSB as the function driver. Also installs a lower and an upper filter.
+;
+
+[Version]
+Signature = "$Windows NT$"
+Class     = USBDevice
+; USBDevice GUID defined for this class.
+ClassGUID = {88BAE032-5A81-49f0-BC3D-A4FF138216D6}
+Provider  = %ManufacturerName%
+CatalogFile = SeekWare.cat
+DriverVer = 04/12/2016, 3.0.0.1
+
+; ========== Manufacturer/Models sections ===========
+
+[Manufacturer]
+%ManufacturerName% = DeviceList, ntx86, ntamd64
+
+[DeviceList.ntx86]
+%DeviceName%= Driver32, USB\VID_289D&PID_0010
+%DeviceName%= Driver32, USB\VID_289D&PID_0010&MI_00
+%DeviceName%= Driver32, USB\VID_289D&PID_0010&MI_01
+%DeviceName%= Driver32, USB\VID_289D&PID_0011
+%DeviceName%= Driver32, USB\VID_289D&PID_0011&MI_00
+%DeviceName%= Driver32, USB\VID_289D&PID_0011&MI_01
+
+[DeviceList.ntamd64]
+%DeviceName%= Driver64WV, USB\VID_289D&PID_0010
+%DeviceName%= Driver64WV, USB\VID_289D&PID_0010&MI_00
+%DeviceName%= Driver64WV, USB\VID_289D&PID_0010&MI_01
+%DeviceName%= Driver64WV, USB\VID_289D&PID_0011
+%DeviceName%= Driver64WV, USB\VID_289D&PID_0011&MI_00
+%DeviceName%= Driver64WV, USB\VID_289D&PID_0011&MI_01
+
+; ========== Class definition ===========
+
+[ClassInstall32]
+AddReg = ClassInstall_AddReg
+
+[ClassInstall_AddReg]
+HKR,,,,%ClassName%
+HKR,,NoInstallClass,,1
+HKR,,Icon,,"-1"
+
+; =================== Installation ===================
+
+[USB_Install]
+Include = winusb.inf
+Needs   = WINUSB.NT
+
+[USB_Install.Services]
+Include = winusb.inf
+Needs   = WINUSB.NT.Services
+
+;------------------------------------------------------------------------------
+;  			        32 bits
+;------------------------------------------------------------------------------
+
+[Driver32.ntx86]
+Include = winusb.inf
+Needs   = WINUSB.NT
+;CopyFiles = DriverCopyFilesWV.ntx86
+
+;[DriverCopyFilesWV.ntx86]
+;low_usbV.sys
+;upp_usbV.sys
+
+[Driver32.ntx86.Services]
+Include = winusb.inf
+Needs   = WINUSB.NT.Services
+;AddService = low_usb, , lowfilt_Service_InstWV
+;AddService = upp_usb, , uppfilt_Service_InstWV
+
+; Here it specifies the device interface globally unique identifier (GUID) for our device.
+[Driver32.ntx86.HW]
+AddReg = Driver32.ntx86.Add_Reg
+
+[Driver32.ntx86.Add_Reg]
+HKR,,DeviceInterfaceGUIDs,0x10000,"{A09E8FEB-919F-482E-B0C5-87696CE8FF0B}" ; DEFINE_GUID(<<name>>, 0xA09E8FEB, 0x919F, 0x482E, 0xb0, 0xc5, 0x87, 0x69, 0x6c, 0xe8, 0xff, 0x0b);
+;HKR,,"LowerFilters",0x00010008,"low_usb"
+;HKR,,"UpperFilters",0x00010008,"upp_usb"
+
+; Co-installer installation
+;[Driver32.ntx86.CoInstallers]
+;AddReg=CoInstallers_AddReg
+;CopyFiles=CoInstallers_CopyFiles
+
+;[Driver32.ntx86.Wdf]
+;KmdfService = WINUSB, WdfInstallSection
+
+;[SourceDisksFiles.x86]
+;WinUsbCoInstaller2.dll = 1,i386
+;WdfCoInstaller01009.dll = 1,i386
+;low_usbV.sys = 1,i386
+;upp_usbV.sys = 1,i386
+
+;------------------------------------------------------------------------------
+;  			        64 bits
+;------------------------------------------------------------------------------
+
+[Driver64WV.ntamd64]
+Include = winusb.inf
+Needs   = WINUSB.NT
+;CopyFiles = DriverCopyFilesWV.ntamd64
+
+;[DriverCopyFilesWV.ntamd64]
+;low_usbV.sys
+;upp_usbV.sys
+
+[Driver64WV.ntamd64.Services]
+Include = winusb.inf
+Needs   = WINUSB.NT.Services
+;AddService = low_usb, , lowfilt_Service_InstWV
+;AddService = upp_usb, , uppfilt_Service_InstWV
+
+; Here it specifies the device interface globally unique identifier (GUID) for our device.
+[Driver64WV.ntamd64.HW]
+AddReg = Driver64WV.ntamd64.Add_Reg
+
+[Driver64WV.ntamd64.Add_Reg]
+HKR,,DeviceInterfaceGUIDs,0x10000,"{A09E8FEB-919F-482E-B0C5-87696CE8FF0B}" ; DEFINE_GUID(<<name>>, 0xA09E8FEB, 0x919F, 0x482E, 0xb0, 0xc5, 0x87, 0x69, 0x6c, 0xe8, 0xff, 0x0b);
+;HKR,,"LowerFilters",0x00010008,"low_usb"
+;HKR,,"UpperFilters",0x00010008,"upp_usb"
+
+; Co-installer installation
+;[Driver64WV.ntamd64.CoInstallers]
+;AddReg=CoInstallers_AddReg
+;CopyFiles=CoInstallers_CopyFiles
+
+;[Driver64WV.ntamd64.Wdf]
+;KmdfService = WINUSB, WdfInstallSection
+
+;[SourceDisksFiles.amd64]
+;WinUsbCoInstaller2.dll = 1,64
+;WdfCoInstaller01009.dll = 1,64
+;low_usbV.sys = 1,64
+;upp_usbV.sys = 1,64
+
+;------------------------------------------------------------------------------
+;  			        32 bits / 64 bits
+;------------------------------------------------------------------------------
+; Services
+;[lowfilt_Service_InstWV]
+;DisplayName    = "Lower Class Filter Driver for SUBI"
+;ServiceType    = 1
+;StartType      = 3
+;ErrorControl   = 1
+;ServiceBinary  = %12%\low_usbV.sys
+
+;[uppfilt_Service_InstWV]
+;DisplayName    = "Upper Class Filter Driver for SUBI"
+;ServiceType    = 1
+;StartType      = 3
+;ErrorControl   = 1
+;ServiceBinary  = %12%\upp_usbV.sys
+
+;[WdfInstallSection]
+;KmdfLibraryVersion = 1.9
+
+; Co-installer
+;[CoInstallers_AddReg]
+;HKR,,CoInstallers32,0x00010000,"WdfCoInstaller01009.dll,WdfCoInstaller","WinUsbCoInstaller2.dll"
+
+; ================= Source Media Section =====================
+
+;[CoInstallers_CopyFiles]
+;WinUsbCoInstaller2.dll
+;WdfCoInstaller01009.dll
+
+;[DestinationDirs]
+;DefaultDestDir = 12
+;CoInstallers_CopyFiles = 11
+
+;[SourceDisksNames]
+;1 = %DiskName%
+
+; =================== Strings ===================
+
+[Strings]
+ManufacturerName="Seek Thermal"
+ClassName="USB Driver"
+DeviceName="Seek Thermal Compact"
+DiskName="Seek Thermal Compact USB Driver"
+REG_MULTI_SZ = 0x00010000
+
