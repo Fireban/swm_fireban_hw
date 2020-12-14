@@ -28,12 +28,12 @@ stty -F /dev/serial0 9600
 도메인을 변경하는 경우 아래의 코드에서 수정하시면 됩니다.
 
 vim swm_fireban-hw/project/src/process.c
-
-> #define FFMPEG_INIT_URL
-> #define GPS_URL
-> #define FFMPEG_THERMAL
-> #define FFMPEG_VIDEO
-
+```
+#define FFMPEG_INIT_URL		// device init
+#define GPS_URL			// gps data transfer point
+#define FFMPEG_THERMAL		// streaming thermal image camera
+#define FFMPEG_VIDEO		// streaming video
+```
 
 
 ## Run
