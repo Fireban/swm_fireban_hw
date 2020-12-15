@@ -5,7 +5,7 @@ DEBUGFLAG	= -g -O0 -Wall
 CFLAGS		+= $(DEBUGFLAG) $(INCFLAG) $(LIBS)
 LIBS		+= -lcurl
 
-TARGET = autorun 
+TARGET = /home/pi/autorun 
 SRCS = PmodGPS.c process.c
 OBJECTS = objs/PmodGPS.o objs/process.o
 

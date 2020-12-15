@@ -6,7 +6,7 @@ LDFLAGS	    	+= -lseekware -lSDL2 `pkg-config --libs libusb-1.0`
 CXXFLAGS	+= $(CFLAGS)
 CPPFLAGS	+= $(CFLAGS)
 
-TARGET	= seekware-sdl
+TARGET	= /home/pi/seekware-sdl
 OBJECTS	= objs/seekware-sdl.o
 
 all: $(TARGET)

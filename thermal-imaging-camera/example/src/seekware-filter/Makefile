@@ -7,7 +7,7 @@ LIBS		+= -lcurl
 CXXFLAGS	+= $(CFLAGS)
 CPPFLAGS	+= $(CFLAGS)
 
-TARGET	= seekware-sdl
+TARGET	= /home/pi/seekware-sdl
 OBJECTS	= objs/seekware-sdl.o
 
 all: $(TARGET)
