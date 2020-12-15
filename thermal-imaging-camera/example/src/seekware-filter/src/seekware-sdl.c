@@ -254,10 +254,19 @@ static int parse_cmdline(int argc, char **argv) {
 	return 1;
 }
 
+// by dj
+void hex_converter(uint32_t* u32_input, size_t elements_in, char* hex_output, size_t elements_out){
+	size_t i;
+	for (i = 0; i < elements_in; i++) {
+		sprintf(hex_output+(i*8), "%X", 0xFFFFFFFF & u32_input[i]);
+	}
+	hex_output[elements_out] = 0;
+}
+
 uint32_t FIRE_THRES = 60;
 uint32_t PERSON_MIN = 25;
 uint32_t PERSON_MAX = 40;
-
+/*
 void person_fire_agc(char* mac_addr, uint16_t* u16_input, size_t elements_in, size_t cols, size_t rows, uint32_t* argb_output, size_t elements_out) {
 
 	size_t fire_check = 0;
@@ -285,11 +294,11 @@ void person_fire_agc(char* mac_addr, uint16_t* u16_input, size_t elements_in, si
 		}
 	} 
 	printf("max: %d, min: %d\n", max, min);
-	/*	
+		
 		if(max < PERSON_MAX){
 		PERSON_MAX = max;
 		}
-	 */
+	 
 	uint32_t luminance = 0;
 	float relative_intensity = 0.0f;
 
@@ -344,11 +353,12 @@ void person_fire_agc(char* mac_addr, uint16_t* u16_input, size_t elements_in, si
 
 	if(curl) {
 		curl_easy_setopt(curl, CURLOPT_URL, "http://www.fireban.kr/api/detect/find/");
-		sprintf(post_data, "mac=%s&image=%u&width=%u&height=%u&min_x=%u&min_y=%u&max_x=%u&max_y=%u&type=%u", mac_addr, argb_output, rows, cols, fire_xy.min_x, fire_xy.min_y, fire_xy.max_x, fire_xy.max_y, fire_check);
-		printf("post_data : %s\n", post_data);
+		sprintf(post_data, "mac=%s&image=%x&width=%u&height=%u&min_x=%u&min_y=%u&max_x=%u&max_y=%u&type=%u", mac_addr, argb_output, rows, cols, fire_xy.min_x, fire_xy.min_y, fire_xy.max_x, fire_xy.max_y, fire_check);
+//printf("post_data : %s\n", post_data);
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post_data);
 
 		res = curl_easy_perform(curl);
+        printf("%s", res);
 		if(res != CURLE_OK)
 			fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
 
@@ -356,10 +366,11 @@ void person_fire_agc(char* mac_addr, uint16_t* u16_input, size_t elements_in, si
 	}
 	curl_global_cleanup();
 }
+*/
 
 //Perform a simple min/max linear stretch to transform U16 grayscale image data to ARGB8888
 //For advanced AGC options that are highly customizable, please see the AGC settings listed in the Seekware User Guide.
-void simple_agc(char* mac_addr, float* flt_input, uint32_t* u32_input, size_t elements_in, size_t cols, size_t rows, uint32_t* argb_output, size_t elements_out) {
+void simple_agc(char* mac_addr, float* flt_input, uint32_t* u32_input, size_t elements_in, size_t cols, size_t rows, uint32_t* argb_output, size_t elements_out, char* image_hex, char* post_data) {
 	if(u32_input == NULL || argb_output == NULL || flt_input == NULL){
 		return;
 	}
@@ -382,53 +393,34 @@ void simple_agc(char* mac_addr, float* flt_input, uint32_t* u32_input, size_t el
 			min = pixel_in;
 		}
 		if(pixel_in > FIRE_THRES) { 
-			if(fire_xy.min_x > (size_t)i/rows) fire_xy.min_x = (size_t)i/rows; 
+			if(fire_xy.min_x > (size_t)i/cols) fire_xy.min_x = (size_t)i/cols; 
 			if(fire_xy.min_y > (size_t)i%cols) fire_xy.min_y = (size_t)i%cols; 
-			if(fire_xy.max_x < (size_t)i/rows) fire_xy.max_x = (size_t)i/rows; 
+			if(fire_xy.max_x < (size_t)i/cols) fire_xy.max_x = (size_t)i/cols; 
 			if(fire_xy.max_y < (size_t)i%cols) fire_xy.max_y = (size_t)i%cols; 
 			fire_check = 1;
-			//printf("%d %d %d %d\n", fire_xy.min_x, fire_xy.min_y, fire_xy.max_x, fire_xy.max_y);
 		}
 	}
-	//if(fire_check == 1) printf("MAX tem : %f\n", max);
-
-	//Find relative intensity based on min/max. Assign output RGB channels to computed 8bit luminance.
-	uint16_t delta = max-min;
-	uint32_t luminance = 0;
-	float relative_intensity = 0.0f;
-	if(delta > 0){
-		argb_output[i] = u32_input[i];
-	}
-
-	char* image_data = malloc(sizeof(argb_output[0])*elements_in+100);
-	memcpy(image_data, argb_output, sizeof(argb_output[0])*elements_in);
-
+	
+	if(fire_check == 1) hex_converter(argb_output, elements_in, image_hex, elements_in*8);
 	CURL *curl;
 	CURLcode res;
 
 	curl_global_init(CURL_GLOBAL_ALL);
 
 	curl = curl_easy_init();
-
-	char* post_data = malloc((sizeof(argb_output[0])*elements_in+200));
-
 	if(fire_check==1) {
 		curl_easy_setopt(curl, CURLOPT_URL, "http://www.fireban.kr/api/detect/find/");
-		sprintf(post_data, "mac=%s&image=%s&width=%u&height=%u&min_x=%u&min_y=%u&max_x=%u&max_y=%u&type=%u", mac_addr, image_data, rows, cols, fire_xy.min_x, fire_xy.min_y, fire_xy.max_x, fire_xy.max_y, fire_check);
-
-//printf("post_data : %s\n", post_data);
+		sprintf(post_data ,"mac=%s&image=%s&width=%u&height=%u&min_x=%u&min_y=%u&max_x=%u&max_y=%u&type=%u", mac_addr, image_hex, cols, rows, fire_xy.min_y, fire_xy.min_x, fire_xy.max_y, fire_xy.max_x, fire_check);
+        
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post_data);
-
 		res = curl_easy_perform(curl);
 		if(res != CURLE_OK)
 			fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-
+		
 		curl_easy_cleanup(curl);
 	}
 	curl_global_cleanup();
 
-	free(post_data);	
-	free(image_data);
 }
 
 int main(int argc, char ** argv) {
@@ -440,6 +432,8 @@ int main(int argc, char ** argv) {
 	struct v4l2_format vid_format;
 	size_t framesize = 0;
 	size_t linewidth = 0;
+	char* image_hex = NULL;  // by dj
+	char* post_data = NULL;
 #endif
 	int x0 = 0;
 	int y0 = 0;
@@ -549,7 +543,6 @@ int main(int argc, char ** argv) {
 		perror("Error: Cannot initialize SDL2");
 		goto cleanup;
 	}
-
 	// Initialize an SDL window:
 	window = SDL_CreateWindow(
 			"seekware-sdl",                         // window title
@@ -619,7 +612,11 @@ int main(int argc, char ** argv) {
 	ret_code = ioctl(fdwr, VIDIOC_S_FMT, &vid_format);
 	assert(ret_code != -1); 
 
-
+	// by dj
+	// 4 * (320*240) * 2 
+        image_hex = malloc(sizeof(uint32_t)*frame_pixels*2 + 10);
+        post_data = malloc(sizeof(uint32_t)*frame_pixels*2 + 110);
+ 
 #endif
 	/* * * * * * * * * * * * * Imaging Loop * * * * * * * * * * * * * * */
 
@@ -646,7 +643,7 @@ int main(int argc, char ** argv) {
 		}
 		if(display_mode == DISPLAY_FILTERED) {
 			status =  Seekware_GetImage(camera, filtered_data, thermal_data, window_texture_data);
-#ifdef FEATURE_V4L2_STREAMING
+#ifdef FEATURE_V4L2_STREAMING  // by dj
 			write(fdwr, window_texture_data, frame_pixels*4);
 #endif
 		}
@@ -671,12 +668,14 @@ int main(int argc, char ** argv) {
 		//Do AGC
 		if (display_mode == DISPLAY_THERMAL) {
 			//simple_agc(thermography_data, frame_pixels, (size_t)camera->frame_cols, (size_t)camera->frame_rows, window_texture_data, frame_pixels);
+			assert("Not supported display mode.");
 		}
-		if (display_mode == DISPLAY_FILTERED) {
-			simple_agc(mac_address, thermal_data, window_texture_data, frame_pixels, (size_t)camera->frame_cols, (size_t)camera->frame_rows, window_texture_data, frame_pixels);
+		if (display_mode == DISPLAY_FILTERED) {  // by dj
+			simple_agc(mac_address, thermal_data, window_texture_data, frame_pixels, (size_t)camera->frame_cols, (size_t)camera->frame_rows, window_texture_data, frame_pixels, image_hex, post_data);
 		}
-		if (display_mode == DISPLAY_PERSON_FILTERED) {
-			person_fire_agc(mac_address, thermography_data, frame_pixels,(size_t)camera->frame_cols, (size_t)camera->frame_rows, window_texture_data, frame_pixels);
+		if (display_mode == DISPLAY_PERSON_FILTERED) {  // by dj
+			//person_fire_agc(mac_address, thermography_data, frame_pixels,(size_t)camera->frame_cols, (size_t)camera->frame_rows, window_texture_data, frame_pixels);
+			assert("Not supported display mode.");
 		}
 
 		//Unlock texture
@@ -770,6 +769,8 @@ cleanup:
 
 
 #ifdef FEATURE_V4L2_STREAMING  // by sulac
+	free(post_data);
+	free(image_hex);
 	close(fdwr);
 #endif
 	//free(mac_address);
