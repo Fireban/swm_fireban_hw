@@ -1,7 +1,7 @@
 #!/bin/bash
 sudo apt-get update
 echo Y | sudo apt-get upgrade
-echo Y | sudo apt-get install libusb-1.0 libusb-dev libsdl2-dev
+echo Y | sudo apt-get install libusb-dev libsdl2-dev
 echo Y | sudo apt-get install libusb-1.0-0-dev libusb-1.0-0
 echo Y | sudo apt-get install v4l2loopback-utils
 echo Y | sudo apt-get install raspberrypi-kernel-headers

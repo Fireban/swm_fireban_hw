@@ -11,6 +11,10 @@ sudo su
 ## Driver Setup 
 
 ```
+git clone git@github.com:umlaeute/v4l2loopback.git
+cd v4l2loopback
+make && sudo make install
+
 sudo depmod -a
 sudo modprobe v4l2loopback video_nr=4
 ```
@@ -21,7 +25,7 @@ sudo modprobe v4l2loopback video_nr=4
 ```
 sudo raspi-config -> 4.Interfacing Options -> P1 Camera Enable
 sudo raspi-config -> 4.Interfacing Options -> P6 Serial Enable
-stty -F /dev/serial0 9600
+sudo stty -F /dev/serial0 9600
 ```
 
 ## streaming server Setup
@@ -35,21 +39,28 @@ vim swm_fireban-hw/project/src/process.c
 #define FFMPEG_VIDEO		// streaming video
 ```
 
+## Build
+```
+cd ./swm_fireban_hw/project
+make
+cd ./swm_fireban_hw/thermal-imaging-camera/example/src/seekware-filter
+make
+```
+
 
 ## Run
 ```
-./SWM_Fireban-HW/thermal-imaging-camera/example/src/seekware_stream_v2/seekware-sdl
-./SWM_Fireban-HW/project/autorun
+./home/pi/seekware-sdl
+./home/pi/autorun
 ```
 
 ## Auto Run
 
 자동실행을 위해서 각각의 스크립트 최하단에 아래의 코드를 추가시켜줍니다.
 
-sudo vim etc/profile.d/bash_completion.sh
+sudo vim /etc/profile.d/bash_completion.sh
 > sudo modprobe v4l2loopback video_nr=4
 
 sudo vim /etc/xdg/lxsession/LXDE-pi/autostart
-> @lxterminal -e ./swm_fireban-hw/thermal-imaging-camera/example/src/seekware_stream_v2/loop_exe.sh
-> @lxterminal -e ./SWM_fireban-hw/project/autorun
+> @lxterminal -e ./loop_exe.sh
 
